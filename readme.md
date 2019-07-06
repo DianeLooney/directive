@@ -9,7 +9,7 @@ other_name "something else"
 version "30"
 [author "diane" "john" "anonymous"]
 
-@note { freq "440" duration "1.beat" }
+@note { freq "440"; duration "1.beat" }
 
 measure {
     [note {} {} {} {}]
@@ -18,11 +18,15 @@ measure {
 
 ## EBNF
 ```
-document           = "{", { directive | repeated_directive } , "}"
-directive          = identifier, value, [";"]
-repeated_directive = "[", identifier, values "]"
+document           = { directive | repeated_directive }
+directive          = [ "@" ], identifier, value, [ ";" ]
+repeated_directive = "[", [ "@" ], identifier, values "]"
 
-identifier         = /(@?[a-zA-Z][a-zA-Z0-9_]+)/
+identifier         = /([a-zA-Z][a-zA-Z0-9_]+)/
 values             = { value, [","] }
-value              = document | string
+value              = object | string
+object             = "{", { directive | repeated_directive }, "}"
+string             = /"((?:[^"\\]|\\.)*)"/
+                   | /'((?:[^'\\]|\\.)*)'/
+                   | /`([^`]*)`/
 ```
