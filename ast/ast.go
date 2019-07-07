@@ -2,14 +2,24 @@ package ast
 
 import (
 	"fmt"
+	"log"
+	"reflect"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
+	"unicode"
 )
 
 var logitI = 0
 
+const loggingEnabled = false
+
 func logit() func() {
+	if !loggingEnabled {
+		return func() {}
+	}
+
 	pc, _, _, _ := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
 	path := f.Name()
@@ -50,12 +60,17 @@ type Node interface {
 	Begin() Position
 	End() Position
 	Text() string
+	Execute(x interface{}) error
 }
 
 type node struct {
 	begin Position
 	end   Position
 	text  []byte
+}
+
+func (n node) Execute(x interface{}) error {
+	panic("execute is not defined yet")
 }
 
 func (n node) Begin() Position {
@@ -83,6 +98,16 @@ func (d Document) String() string {
 	return strings.Join(strs, " ")
 }
 
+func (d Document) Execute(x interface{}) error {
+	for _, dir := range d.Directives {
+		err := dir.Execute(x)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type Object struct {
 	node
 	Directives []Node
@@ -105,6 +130,15 @@ func (s String) String() string {
 	return s.Value
 }
 
+type Number struct {
+	node
+	Value string
+}
+
+func (n Number) String() string {
+	return n.Value
+}
+
 type Directive struct {
 	node
 	Identifier string
@@ -120,11 +154,68 @@ func (d Directive) String() string {
 	}
 }
 
+func (d Directive) Execute(x interface{}) error {
+	switch v := d.Value.(type) {
+	case *Object:
+		y, err := get(x, d.Identifier)
+		if err != nil {
+			return err
+		}
+		return v.Execute(y)
+	case *String:
+		return set(x, d.Identifier, v.Value)
+	case *Number:
+		return set(x, d.Identifier, v.Value)
+	}
+	log.Fatalf("Unhandled value type %T", d.Value)
+	panic("unreachable")
+}
+
+func (o Object) Execute(x interface{}) error {
+	for _, dir := range o.Directives {
+		err := dir.Execute(x)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type RepeatedDirective struct {
 	node
 	Identifier string
 	IsContext  bool
 	Values     []Node
+}
+
+func (r RepeatedDirective) Execute(x interface{}) error {
+	for _, value := range r.Values {
+		switch v := value.(type) {
+		case *Object:
+			y, err := get(x, r.Identifier)
+			if err != nil {
+				return err
+			}
+			v.Execute(y)
+			continue
+		case *String:
+			err := set(x, r.Identifier, v.Value)
+			if err != nil {
+				return err
+			}
+			continue
+		case *Number:
+			err := set(x, r.Identifier, v.Value)
+			if err != nil {
+				return err
+			}
+			continue
+		default:
+			log.Fatalf("Unhandled value type %T", v)
+		}
+		panic("unreachable")
+	}
+	return nil
 }
 
 func (d RepeatedDirective) String() string {
@@ -361,6 +452,12 @@ func (p *Parser) parseValue() (v Node, err error) {
 			return nil, fmt.Errorf("failed to parse Value: %v", err)
 		}
 		return o, nil
+	} else if unicode.IsNumber(rune(c)) {
+		n, err := p.parseNumber()
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse Value: %v", err)
+		}
+		return n, nil
 	}
 	return nil, fmt.Errorf("failed to parse Value: unrecognized character %s", []byte{c})
 }
@@ -426,4 +523,76 @@ func (p *Parser) parseObject() (o *Object, err error) {
 			o.Directives = append(o.Directives, v)
 		}
 	}
+}
+
+var number = regexp.MustCompile(`^([+-]?)[0-9]+(?:\.[0-9]*)?`)
+
+func (p *Parser) parseNumber() (n *Number, err error) {
+	defer logit()()
+
+	num, err := p.consumeRegex(number)
+	if err != nil {
+		return nil, fmt.Errorf("Number was not formatted correctly: %v", err)
+	}
+	n = &Number{
+		Value: num,
+	}
+
+	return n, nil
+}
+
+func get(x interface{}, field string) (interface{}, error) {
+	t := reflect.ValueOf(x)
+	m := t.MethodByName(field)
+	if !m.IsNil() {
+		out := m.Call(nil)
+		return out[0].Interface(), nil
+	}
+
+	f := t.FieldByName(field)
+	if !f.IsNil() {
+		return f.Interface(), nil
+	}
+
+	return nil, fmt.Errorf("%T did not have method or field %s", x, field)
+}
+
+func set(x interface{}, field string, value string) error {
+	t := reflect.ValueOf(x)
+
+	m := t.MethodByName(field)
+	if k := m.Kind(); k == reflect.Func {
+		t := m.Type().In(0)
+		switch t.Kind() {
+		case reflect.Float64:
+			v, err := strconv.ParseFloat(value, 64)
+			if err != nil {
+				return fmt.Errorf("error while calling method %s with '%s': %v", field, value, err)
+			}
+			m.Call([]reflect.Value{reflect.ValueOf(v)})
+		default:
+			log.Fatalf("Need to implement kind '%s' in directive/ast.set - method", t.Kind())
+		}
+		return nil
+	}
+
+	f := t.Elem().FieldByName(field)
+	zero := reflect.Value{}
+	if f != zero {
+		switch f.Kind() {
+		case reflect.String:
+			f.Set(reflect.ValueOf(value))
+		case reflect.Float64:
+			v, err := strconv.ParseFloat(value, 64)
+			if err != nil {
+				return fmt.Errorf("error while setting field %s to '%s': %v", field, value, err)
+			}
+			f.Set(reflect.ValueOf(v))
+		default:
+			log.Fatalf("Need to implement kind '%s' in directive/ast.set - field", f.Kind())
+		}
+		return nil
+	}
+
+	return fmt.Errorf("%T did not have method or field %s", x, field)
 }

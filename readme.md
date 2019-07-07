@@ -14,6 +14,7 @@ version "30"
 measure {
     [note {} {} {} {}]
 }
+
 ```
 
 ## EBNF
@@ -27,6 +28,4 @@ values             = { value, [","] }
 value              = object | string
 object             = "{", { directive | repeated_directive }, "}"
 string             = /"((?:[^"\\]|\\.)*)"/
-                   | /'((?:[^'\\]|\\.)*)'/
-                   | /`([^`]*)`/
 ```
