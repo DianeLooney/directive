@@ -38,5 +38,5 @@ type exeggutor struct {
 }
 
 func (e exeggutor) Execute(target interface{}) (err error) {
-	return e.Execute(target)
+	return e.doc.Execute(target)
 }
