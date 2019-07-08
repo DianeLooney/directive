@@ -77,6 +77,10 @@ func TestParseDocument(t *testing.T) {
 	if d == nil {
 		t.Errorf("Parse returned a nil Document")
 	}
+
 	document := Doc{}
 	d.Execute(&document)
+	if document.Time != "4/4" {
+		t.Errorf("Parse returned an incorrect string argument. Expected '4/4' but got '%v'", document.Time)
+	}
 }

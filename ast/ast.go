@@ -440,12 +440,12 @@ func (p *Parser) parseValue() (v Node, err error) {
 
 	if !ok {
 		return nil, fmt.Errorf("encountered EOF while parsing Value")
-	} else if c == '"' {
-		s, err := p.consumeRegex(strDbl)
+	} else if c == '"' || c == '\'' || c == '`' {
+		s, err := p.parseString()
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse Value: %v", err)
 		}
-		return &String{Value: s}, nil
+		return s, nil
 	} else if c == '{' {
 		o, err := p.parseObject()
 		if err != nil {
@@ -475,6 +475,10 @@ func (p *Parser) parseString() (s *String, err error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse Value: %v", err)
 		}
+		s, err = strconv.Unquote(s)
+		if err != nil {
+			return nil, err
+		}
 		return &String{Value: s}, nil
 	}
 
@@ -483,11 +487,19 @@ func (p *Parser) parseString() (s *String, err error) {
 		if err != nil {
 			return nil, err
 		}
+		s, err = strconv.Unquote(s)
+		if err != nil {
+			return nil, err
+		}
 		return &String{Value: s}, nil
 	}
 
 	if c == '`' {
 		s, err := p.consumeRegex(strLit)
+		if err != nil {
+			return nil, err
+		}
+		s, err = strconv.Unquote(s)
 		if err != nil {
 			return nil, err
 		}
