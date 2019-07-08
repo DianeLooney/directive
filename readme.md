@@ -1,6 +1,6 @@
 # Directive
 
-Package for parsing DRY data.
+Scripting to-go
 
 ## Example
 ```
