@@ -582,6 +582,14 @@ func set(x interface{}, field string, value string) error {
 				return fmt.Errorf("error while calling method %s with '%s': %v", field, value, err)
 			}
 			m.Call([]reflect.Value{reflect.ValueOf(v)})
+		case reflect.String:
+			m.Call([]reflect.Value{reflect.ValueOf(value)})
+		case reflect.Int:
+			v, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				return fmt.Errorf("error while calling method %s with '%s': %v", field, value, err)
+			}
+			m.Call([]reflect.Value{reflect.ValueOf(int(v))})
 		default:
 			log.Fatalf("Need to implement kind '%s' in directive/ast.set - method", t.Kind())
 		}
