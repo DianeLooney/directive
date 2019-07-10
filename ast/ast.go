@@ -191,7 +191,7 @@ type RepeatedDirective struct {
 func (r RepeatedDirective) Execute(x interface{}) (err error) {
 	defer func() {
 		e := recover()
-		if err == nil {
+		if err == nil && e != nil {
 			err = fmt.Errorf("Recovered from panic: %v", e)
 		}
 	}()
