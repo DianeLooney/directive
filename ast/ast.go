@@ -609,6 +609,12 @@ func set(x interface{}, field string, value string) error {
 		switch f.Kind() {
 		case reflect.String:
 			f.Set(reflect.ValueOf(value))
+		case reflect.Int:
+			v, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error while setting field %s to '%s': %v", field, value, err)
+			}
+			f.Set(reflect.ValueOf(v))
 		case reflect.Float64:
 			v, err := strconv.ParseFloat(value, 64)
 			if err != nil {
