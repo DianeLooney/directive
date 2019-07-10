@@ -188,7 +188,14 @@ type RepeatedDirective struct {
 	Values     []Node
 }
 
-func (r RepeatedDirective) Execute(x interface{}) error {
+func (r RepeatedDirective) Execute(x interface{}) (err error) {
+	defer func() {
+		e := recover()
+		if err == nil {
+			err = fmt.Errorf("Recovered from panic: %v", e)
+		}
+	}()
+
 	for _, value := range r.Values {
 		switch v := value.(type) {
 		case *Object:
