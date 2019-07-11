@@ -617,7 +617,7 @@ var unknown = regexp.MustCompile(`^(\?)`)
 func (p *Parser) parseUnknown() (n *Unknown, err error) {
 	defer logit()()
 
-	v, err := p.consumeRegex(note)
+	v, err := p.consumeRegex(unknown)
 	if err != nil {
 		return nil, fmt.Errorf("Unknown was not formatted correctly: %v", err)
 	}
