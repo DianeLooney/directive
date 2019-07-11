@@ -471,6 +471,7 @@ func (p *Parser) parseValue() (v Node, err error) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse Note: %v", err)
 			}
+			return n, nil
 		}
 		return n, nil
 	}
