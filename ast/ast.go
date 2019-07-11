@@ -140,6 +140,11 @@ type Note struct {
 	Value string
 }
 
+type Unknown struct {
+	node
+	Value string
+}
+
 func (n Number) String() string {
 	return n.Value
 }
@@ -172,6 +177,8 @@ func (d Directive) Execute(x interface{}) error {
 	case *Number:
 		return set(x, d.Identifier, v.Value)
 	case *Note:
+		return set(x, d.Identifier, v.Value)
+	case *Unknown:
 		return set(x, d.Identifier, v.Value)
 	}
 	log.Fatalf("Unhandled value type %T", d.Value)
@@ -225,6 +232,12 @@ func (r RepeatedDirective) Execute(x interface{}) (err error) {
 			}
 			continue
 		case *Note:
+			err := set(x, r.Identifier, v.Value)
+			if err != nil {
+				return err
+			}
+			continue
+		case *Unknown:
 			err := set(x, r.Identifier, v.Value)
 			if err != nil {
 				return err
@@ -482,6 +495,12 @@ func (p *Parser) parseValue() (v Node, err error) {
 			return n, nil
 		}
 		return n, nil
+	} else if c == '?' {
+		n, err := p.parseUnknown()
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse Unknown: %v", err)
+		}
+		return n, nil
 	}
 	return nil, fmt.Errorf("failed to parse Value: unrecognized character %s", []byte{c})
 }
@@ -587,6 +606,22 @@ func (p *Parser) parseNote() (n *Note, err error) {
 		return nil, fmt.Errorf("Note was not formatted correctly: %v", err)
 	}
 	n = &Note{
+		Value: v,
+	}
+
+	return n, nil
+}
+
+var unknown = regexp.MustCompile(`^(\?)`)
+
+func (p *Parser) parseUnknown() (n *Unknown, err error) {
+	defer logit()()
+
+	v, err := p.consumeRegex(note)
+	if err != nil {
+		return nil, fmt.Errorf("Unknown was not formatted correctly: %v", err)
+	}
+	n = &Unknown{
 		Value: v,
 	}
 
