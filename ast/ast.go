@@ -171,6 +171,8 @@ func (d Directive) Execute(x interface{}) error {
 		return set(x, d.Identifier, v.Value)
 	case *Number:
 		return set(x, d.Identifier, v.Value)
+	case *Note:
+		return set(x, d.Identifier, v.Value)
 	}
 	log.Fatalf("Unhandled value type %T", d.Value)
 	panic("unreachable")
