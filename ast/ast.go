@@ -553,7 +553,7 @@ func (p *Parser) parseObject() (o *Object, err error) {
 	}
 }
 
-var number = regexp.MustCompile(`^([+-]?)[0-9]+(?:\.[0-9]*)?`)
+var number = regexp.MustCompile(`^([+-]?)[0-9]+(?:\.[0-9]*)\b?`)
 
 func (p *Parser) parseNumber() (n *Number, err error) {
 	defer logit()()
@@ -569,7 +569,7 @@ func (p *Parser) parseNumber() (n *Number, err error) {
 	return n, nil
 }
 
-var note = regexp.MustCompile(`^([+-]?[0-9]+[#b]*)`)
+var note = regexp.MustCompile(`^([+-]?[0-9]+[#b]*)\b`)
 
 func (p *Parser) parseNote() (n *Note, err error) {
 	defer logit()()
