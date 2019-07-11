@@ -135,6 +135,11 @@ type Number struct {
 	Value string
 }
 
+type Note struct {
+	node
+	Value string
+}
+
 func (n Number) String() string {
 	return n.Value
 }
@@ -459,10 +464,13 @@ func (p *Parser) parseValue() (v Node, err error) {
 			return nil, fmt.Errorf("failed to parse Value: %v", err)
 		}
 		return o, nil
-	} else if unicode.IsNumber(rune(c)) {
+	} else if unicode.IsNumber(rune(c)) || c == '-' || c == '+' {
 		n, err := p.parseNumber()
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse Value: %v", err)
+			n, err := p.parseNote()
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse Note: %v", err)
+			}
 		}
 		return n, nil
 	}
@@ -555,6 +563,22 @@ func (p *Parser) parseNumber() (n *Number, err error) {
 	}
 	n = &Number{
 		Value: num,
+	}
+
+	return n, nil
+}
+
+var note = regexp.MustCompile(`^([+-]?[0-9]+[#b]*`)
+
+func (p *Parser) parseNote() (n *Note, err error) {
+	defer logit()()
+
+	v, err := p.consumeRegex(note)
+	if err != nil {
+		return nil, fmt.Errorf("Note was not formatted correctly: %v", err)
+	}
+	n = &Note{
+		Value: v,
 	}
 
 	return n, nil
