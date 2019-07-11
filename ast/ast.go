@@ -224,6 +224,12 @@ func (r RepeatedDirective) Execute(x interface{}) (err error) {
 				return err
 			}
 			continue
+		case *Note:
+			err := set(x, r.Identifier, v.Value)
+			if err != nil {
+				return err
+			}
+			continue
 		default:
 			log.Fatalf("Unhandled value type %T", v)
 		}

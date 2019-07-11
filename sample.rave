@@ -1,0 +1,20 @@
+time "4/4"
+tempo 120
+
+insturment {
+    sample "bass_1"
+    loop {
+        measure {
+            [pulse 1 2 3 4]
+        }
+    }
+}
+
+insturment {
+    sample "snare_1"
+    loop {
+        measure {
+            [pulse 2.33 2.66 4.33 4.66]
+        }
+    }
+}
