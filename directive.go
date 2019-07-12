@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dianelooney/directive/ast"
+	"github.com/dianelooney/directive/format"
 )
 
 type Executer interface {
@@ -38,5 +39,6 @@ type exeggutor struct {
 }
 
 func (e exeggutor) Execute(target interface{}) (err error) {
+	format.PrettyPrint(e.doc)
 	return e.doc.Execute(target)
 }

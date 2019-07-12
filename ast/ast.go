@@ -63,6 +63,14 @@ type Node interface {
 	Execute(x interface{}) error
 }
 
+type Whitespace struct {
+	node
+}
+
+func (w Whitespace) Execute(x interface{}) error {
+	return nil
+}
+
 type node struct {
 	begin Position
 	end   Position
@@ -315,9 +323,16 @@ func (p *Parser) consumeRegex(r *regexp.Regexp) (text string, err error) {
 	return
 }
 
-func (p *Parser) skipWhitespace() {
+func (p *Parser) skipWhitespace() (n []Node) {
+	firstNewline := true
 	for {
 		c, ok := p.peekByte()
+		if c == '\n' {
+			if !firstNewline {
+				n = append(n, Whitespace{})
+			}
+			firstNewline = false
+		}
 		if ok && whitespace[c] {
 			p.consumeByte(c)
 			continue
@@ -344,7 +359,7 @@ func (p *Parser) parseDocument() (d *Document, err error) {
 
 	d = &Document{}
 	for {
-		p.skipWhitespace()
+		d.Directives = append(d.Directives, p.skipWhitespace()...)
 
 		c, ok := p.peekByte()
 		if !ok {
@@ -518,11 +533,11 @@ func (p *Parser) parseString() (s *String, err error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse Value: %v", err)
 		}
-		s, err = strconv.Unquote(s)
+		v, err := strconv.Unquote(s)
 		if err != nil {
 			return nil, err
 		}
-		return &String{Value: s}, nil
+		return &String{Value: v, node: node{text: []byte(s)}}, nil
 	}
 
 	if c == '\'' {
@@ -530,11 +545,11 @@ func (p *Parser) parseString() (s *String, err error) {
 		if err != nil {
 			return nil, err
 		}
-		s, err = strconv.Unquote(s)
+		v, err := strconv.Unquote(s)
 		if err != nil {
 			return nil, err
 		}
-		return &String{Value: s}, nil
+		return &String{Value: v, node: node{text: []byte(s)}}, nil
 	}
 
 	if c == '`' {
@@ -542,11 +557,11 @@ func (p *Parser) parseString() (s *String, err error) {
 		if err != nil {
 			return nil, err
 		}
-		s, err = strconv.Unquote(s)
+		v, err := strconv.Unquote(s)
 		if err != nil {
 			return nil, err
 		}
-		return &String{Value: s}, nil
+		return &String{Value: v, node: node{text: []byte(s)}}, nil
 	}
 
 	p.consumeByte(c)
@@ -557,7 +572,7 @@ func (p *Parser) parseObject() (o *Object, err error) {
 	p.consumeByte('{')
 	o = &Object{}
 	for {
-		p.skipWhitespace()
+		o.Directives = append(o.Directives, p.skipWhitespace()...)
 
 		if c, ok := p.peekByte(); !ok {
 			return nil, fmt.Errorf("encountered EOF while parsing Object")
@@ -591,6 +606,7 @@ func (p *Parser) parseNumber() (n *Number, err error) {
 	}
 	n = &Number{
 		Value: num,
+		node:  node{text: []byte(num)},
 	}
 
 	return n, nil
@@ -607,6 +623,7 @@ func (p *Parser) parseNote() (n *Note, err error) {
 	}
 	n = &Note{
 		Value: v,
+		node:  node{text: []byte(v)},
 	}
 
 	return n, nil
@@ -623,6 +640,7 @@ func (p *Parser) parseUnknown() (n *Unknown, err error) {
 	}
 	n = &Unknown{
 		Value: v,
+		node:  node{text: []byte(v)},
 	}
 
 	return n, nil

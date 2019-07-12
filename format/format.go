@@ -1,0 +1,49 @@
+package format
+
+import (
+	"os"
+	"strings"
+	"text/tabwriter"
+
+	"github.com/dianelooney/directive/ast"
+)
+
+func PrettyPrint(n ast.Node) {
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 0, 4, 1, ' ', 0)
+	print(w, n, 0)
+	w.Flush()
+}
+
+func print(w *tabwriter.Writer, n ast.Node, i int) {
+	indent := strings.Repeat("\t", i)
+
+	switch v := n.(type) {
+	case *ast.Whitespace:
+		w.Write([]byte{'\n'})
+	case *ast.Directive:
+		if _, ok := v.Value.(*ast.Object); ok {
+
+			w.Write([]byte(indent + v.Identifier + "\t{\n"))
+			print(w, v.Value, i+1)
+			w.Write([]byte(indent + "}\n"))
+		} else {
+			w.Write([]byte(indent + v.Identifier + "\t" + v.Value.Text() + "\n"))
+		}
+	case *ast.RepeatedDirective:
+		s := indent + "[" + v.Identifier
+		for _, x := range v.Values {
+			s += "\t" + x.Text()
+		}
+		s += "]\n"
+		w.Write([]byte(s))
+	case *ast.Document:
+		for _, d := range v.Directives {
+			print(w, d, i)
+		}
+	case *ast.Object:
+		for _, d := range v.Directives {
+			print(w, d, i+1)
+		}
+	}
+}
