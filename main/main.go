@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
+
+	"github.com/dianelooney/directive/format"
 
 	. "github.com/dianelooney/directive/ast"
 )
@@ -31,5 +32,5 @@ func main() {
 		log.Fatalf("Parse returned a nil Document")
 	}
 
-	fmt.Printf("%s\n", d)
+	format.PrettyPrint(d)
 }

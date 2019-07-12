@@ -327,17 +327,19 @@ func (p *Parser) skipWhitespace() (n []Node) {
 	firstNewline := true
 	for {
 		c, ok := p.peekByte()
+		if !ok {
+			break
+		}
+		if !whitespace[c] {
+			break
+		}
 		if c == '\n' {
 			if !firstNewline {
 				n = append(n, Whitespace{})
 			}
 			firstNewline = false
 		}
-		if ok && whitespace[c] {
-			p.consumeByte(c)
-			continue
-		}
-		break
+		p.consumeByte(c)
 	}
 	return
 }

@@ -19,7 +19,7 @@ func print(w *tabwriter.Writer, n ast.Node, i int) {
 	indent := strings.Repeat("\t", i)
 
 	switch v := n.(type) {
-	case *ast.Whitespace:
+	case ast.Whitespace:
 		w.Write([]byte{'\n'})
 	case *ast.Directive:
 		if _, ok := v.Value.(*ast.Object); ok {
