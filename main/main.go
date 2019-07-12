@@ -10,16 +10,38 @@ import (
 
 func main() {
 	const doc = `
-		name "something"
-		other_name "something else"
-		version "30"
-		[author "diane" "john" "anonymous"]
-
-		@note { freq "440"; duration "1.beat" }
-
-		measure {
-			[note {} {} {} {}]
+	TimeTop 6
+	TimeBot 8
+	Tempo 150
+	
+	Kit {
+		Name "x"
+		Volume 0.1
+		[Sample "808s_2" "hihats_1"]
+		Loop {
+			Measure {
+				[Pulse 	1	2	3			]
+			}
 		}
+	}
+	
+	Wave {
+		Name "carrot"
+		Volume 0.01
+		BaseFreq 440
+		Chord "major"
+		Pattern "sin"
+		Vibrato 1.05
+	
+		Loop {
+			Measure {
+				[Note 	1]
+				[Len  	6]
+				[Pulse	1]
+			}
+		}
+	}
+	
 	`
 
 	p := NewParser([]byte(doc))
