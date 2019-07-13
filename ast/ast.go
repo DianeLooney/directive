@@ -460,7 +460,7 @@ func (p *Parser) parseRepeatedDirective() (d *RepeatedDirective, err error) {
 	return d, nil
 }
 
-var identifier = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]+`)
+var identifier = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]*`)
 
 func (p *Parser) parseIdentifier() (ident string, err error) {
 	defer logit()()
