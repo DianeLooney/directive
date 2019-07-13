@@ -11,14 +11,14 @@ import (
 
 func Prettify(n ast.Node, wr io.Writer) {
 	w := new(tabwriter.Writer)
-	w.Init(wr, 4, 0, 1, ' ', 0)
+	w.Init(wr, 6, 0, 1, ' ', 0)
 	print(w, n, 0)
 	w.Flush()
 }
 
 func PrettyPrint(n ast.Node) {
 	w := new(tabwriter.Writer)
-	w.Init(os.Stdout, 4, 0, 1, ' ', 0)
+	w.Init(os.Stdout, 6, 0, 1, ' ', 0)
 	print(w, n, 0)
 	w.Flush()
 }
