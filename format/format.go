@@ -32,7 +32,7 @@ func print(w *tabwriter.Writer, n ast.Node, i int) {
 	case *ast.Directive:
 		if _, ok := v.Value.(*ast.Object); ok {
 			if v.HasSemi {
-				w.Write([]byte(indent + v.Identifier + " {"))
+				w.Write([]byte(indent + v.Identifier + "\t{"))
 				printSingle(w, v.Value, i)
 				w.Write([]byte("};\n"))
 			} else {
