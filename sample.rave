@@ -26,6 +26,6 @@ Wave {
                   [Note  1]
                   [Len   6]
                   [Pulse 1]
-            }
+            };
       }
 }

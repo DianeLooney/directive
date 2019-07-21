@@ -32,6 +32,8 @@ func main() {
 		Chord "major"
 		Pattern "sin"
 		Vibrato 1.05
+
+		A { b "c" };
 	
 		Loop {
 			Measure {

@@ -31,10 +31,15 @@ func print(w *tabwriter.Writer, n ast.Node, i int) {
 		w.Write([]byte{'\n'})
 	case *ast.Directive:
 		if _, ok := v.Value.(*ast.Object); ok {
-
-			w.Write([]byte(indent + v.Identifier + " {\n"))
-			print(w, v.Value, i)
-			w.Write([]byte(indent + "}\n"))
+			if v.HasSemi {
+				w.Write([]byte(indent + v.Identifier + " {"))
+				printSingle(w, v.Value, i)
+				w.Write([]byte("};\n"))
+			} else {
+				w.Write([]byte(indent + v.Identifier + " {\n"))
+				print(w, v.Value, i)
+				w.Write([]byte(indent + "}\n"))
+			}
 		} else {
 			w.Write([]byte(indent + v.Identifier + "\t" + v.Value.Text() + "\n"))
 		}
@@ -52,6 +57,38 @@ func print(w *tabwriter.Writer, n ast.Node, i int) {
 	case *ast.Object:
 		for _, d := range v.Directives {
 			print(w, d, i+1)
+		}
+	}
+}
+func printSingle(w *tabwriter.Writer, n ast.Node, i int) {
+	indent := strings.Repeat("\t", i)
+
+	switch v := n.(type) {
+	case ast.Whitespace:
+	case *ast.Directive:
+		if _, ok := v.Value.(*ast.Object); ok {
+			if v.HasSemi {
+				w.Write([]byte(v.Identifier + " {"))
+				printSingle(w, v.Value, i)
+				w.Write([]byte("}"))
+			}
+		} else {
+			w.Write([]byte(" " + v.Identifier + "\t" + v.Value.Text() + " "))
+		}
+	case *ast.RepeatedDirective:
+		s := indent + "[" + v.Identifier
+		for _, x := range v.Values {
+			s += "\t" + x.Text()
+		}
+		s += "]\t"
+		w.Write([]byte(s))
+	case *ast.Document:
+		for _, d := range v.Directives {
+			printSingle(w, d, i)
+		}
+	case *ast.Object:
+		for _, d := range v.Directives {
+			printSingle(w, d, i+1)
 		}
 	}
 }

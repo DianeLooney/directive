@@ -162,6 +162,7 @@ type Directive struct {
 	Identifier string
 	IsContext  bool
 	Value      Node
+	HasSemi    bool
 }
 
 func (d Directive) String() string {
@@ -409,7 +410,11 @@ func (p *Parser) parseDirective() (d *Directive, err error) {
 
 	d.Value, err = p.parseValue()
 
-	p.skipSemi()
+	p.skipWhitespace()
+	if b, ok := p.peekByte(); ok && b == ';' {
+		p.consumeByte(';')
+		d.HasSemi = true
+	}
 
 	return d, err
 }
