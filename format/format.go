@@ -36,7 +36,7 @@ func print(w *tabwriter.Writer, n ast.Node, i int) {
 				printSingle(w, v.Value, i)
 				w.Write([]byte("};\n"))
 			} else {
-				w.Write([]byte(indent + v.Identifier + " {\n"))
+				w.Write([]byte(indent + v.Identifier + "\t{\n"))
 				print(w, v.Value, i)
 				w.Write([]byte(indent + "}\n"))
 			}
