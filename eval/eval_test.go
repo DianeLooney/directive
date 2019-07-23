@@ -43,6 +43,16 @@ func TestEval_Add(t *testing.T) {
 		expected: []float64{4, 5, 5, 6},
 	}.Test(t)
 }
+func TestEval_Sub(t *testing.T) {
+	testCase{
+		str:      `1 - 2`,
+		expected: []float64{-1},
+	}.Test(t)
+	testCase{
+		str:      `1 2 - 3 4`,
+		expected: []float64{-2, -3, -1, -2},
+	}.Test(t)
+}
 func TestEval_Mod(t *testing.T) {
 	testCase{
 		str:      `0 % 1 0 8`,

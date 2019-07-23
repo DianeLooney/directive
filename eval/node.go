@@ -45,6 +45,16 @@ func (n *Operator) Evaluate() (out []float64) {
 			}
 		}
 		return
+	case "-":
+		i := 0
+		out = make([]float64, len(left)*len(right))
+		for _, x := range left {
+			for _, y := range right {
+				out[i] = x - y
+				i++
+			}
+		}
+		return
 	case "%":
 		mod := right[0]
 		min := right[1]
