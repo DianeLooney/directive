@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/dianelooney/directive/eval"
 )
 
 var logitI = 0
@@ -131,7 +133,8 @@ func (o Object) String() string {
 
 type String struct {
 	node
-	Value string
+	Value   string
+	IsMacro bool
 }
 
 func (s String) String() string {
@@ -229,9 +232,19 @@ func (r RepeatedDirective) Execute(x interface{}) (err error) {
 			v.Execute(y)
 			continue
 		case *String:
-			err := set(x, r.Identifier, v.Value)
-			if err != nil {
-				return err
+			if v.IsMacro {
+				nums := eval.Eval(v.Value)
+				for _, n := range nums {
+					err := set(x, r.Identifier, fmt.Sprintf("%v", n))
+					if err != nil {
+						return err
+					}
+				}
+			} else {
+				err := set(x, r.Identifier, v.Value)
+				if err != nil {
+					return err
+				}
 			}
 			continue
 		case *Number:
@@ -487,7 +500,7 @@ func (p *Parser) parseContext() (ident string, err error) {
 
 var strDbl = regexp.MustCompile(`"((?:[^"\\]|\\.)*)"`)
 var strSgl = regexp.MustCompile(`'((?:[^"\\]|\\.)*)'`)
-var strLit = regexp.MustCompile("`" + `([^` + "`" + `]*)` + "`")
+var strMacro = regexp.MustCompile("`" + `([^` + "`" + `]*)` + "`")
 
 func (p *Parser) parseValue() (v Node, err error) {
 	defer logit()()
@@ -560,7 +573,7 @@ func (p *Parser) parseString() (s *String, err error) {
 	}
 
 	if c == '`' {
-		s, err := p.consumeRegex(strLit)
+		s, err := p.consumeRegex(strMacro)
 		if err != nil {
 			return nil, err
 		}
@@ -568,7 +581,7 @@ func (p *Parser) parseString() (s *String, err error) {
 		if err != nil {
 			return nil, err
 		}
-		return &String{Value: v, node: node{text: []byte(s)}}, nil
+		return &String{Value: v, node: node{text: []byte(s)}, IsMacro: true}, nil
 	}
 
 	p.consumeByte(c)
