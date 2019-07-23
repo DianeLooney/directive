@@ -60,6 +60,7 @@ func print(w *tabwriter.Writer, n ast.Node, i int) {
 		}
 	}
 }
+
 func printSingle(w *tabwriter.Writer, n ast.Node, i int) {
 	indent := strings.Repeat("\t", i)
 
