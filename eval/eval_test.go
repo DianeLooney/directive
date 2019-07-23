@@ -57,6 +57,16 @@ func TestEval_Mod(t *testing.T) {
 		expected: []float64{1.0 / 3, 4.0 / 3, 2.0 / 3, 5.0 / 3},
 	}.Test(t)
 }
+func TestEval_Rep(t *testing.T) {
+	testCase{
+		str:      `0 * 8`,
+		expected: []float64{0, 0, 0, 0, 0, 0, 0, 0},
+	}.Test(t)
+	testCase{
+		str:      `4 5 6 * 1 2 3`,
+		expected: []float64{4, 5, 6, 4, 4, 5, 5, 6, 6, 4, 4, 4, 5, 5, 5, 6, 6, 6},
+	}.Test(t)
+}
 
 func TestTokenize(t *testing.T) {
 	eval.Tokenize(`1(2 3 %4)`)

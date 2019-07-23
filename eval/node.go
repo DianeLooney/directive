@@ -61,6 +61,15 @@ func (n *Operator) Evaluate() (out []float64) {
 			}
 		}
 		return out
+	case "*":
+		for _, count := range right {
+			for _, x := range left {
+				for i := 0; i < int(count); i++ {
+					out = append(out, x)
+				}
+			}
+		}
+		return out
 	}
 
 	panic("operator " + string(n.Op) + " not supported in *Operator.Evaluate()")

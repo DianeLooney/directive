@@ -33,6 +33,7 @@ var symbols = []string{
 	//`…`,
 	`(`,
 	`)`,
+	`*`,
 }
 var tkn = regexp.MustCompile(`(?:[0-9]+/[0-9]+)|(?:-?[0-9]+(?:\.[0-9]*)?)|x|\` + strings.Join(symbols, `|\`))
 
