@@ -38,8 +38,8 @@ func (n *Operator) Evaluate() (out []float64) {
 	case "+":
 		i := 0
 		out = make([]float64, len(left)*len(right))
-		for _, x := range left {
-			for _, y := range right {
+		for _, y := range right {
+			for _, x := range left {
 				out[i] = x + y
 				i++
 			}
@@ -48,8 +48,8 @@ func (n *Operator) Evaluate() (out []float64) {
 	case "-":
 		i := 0
 		out = make([]float64, len(left)*len(right))
-		for _, x := range left {
-			for _, y := range right {
+		for _, y := range right {
+			for _, x := range left {
 				out[i] = x - y
 				i++
 			}

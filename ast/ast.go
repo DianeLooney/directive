@@ -687,6 +687,10 @@ func set(x interface{}, field string, value string) error {
 
 	m := t.MethodByName(field)
 	if k := m.Kind(); k == reflect.Func {
+		if m.Type().NumIn() == 0 {
+			fmt.Printf("Calling %s.%s, but ignored arguments\n", t.Type().Name(), m.Type().Name())
+			return nil
+		}
 		t := m.Type().In(0)
 		switch t.Kind() {
 		case reflect.Float64:

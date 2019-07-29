@@ -92,7 +92,12 @@ func compact(in []Node) (out Node) {
 	}
 	list := make([]Node, len(in))
 	for i, n := range in {
-		list[i] = &Value{Tok: n.(Token)}
+		if tok, ok := n.(Token); ok {
+			list[i] = &Value{Tok: tok}
+		}
+		if grp, ok := n.(*Group); ok {
+			list[i] = grp
+		}
 	}
 	return &List{Nums: list}
 }

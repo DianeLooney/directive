@@ -78,6 +78,13 @@ func TestEval_Rep(t *testing.T) {
 	}.Test(t)
 }
 
+func TestEval_Thing(t *testing.T) {
+	testCase{
+		str:      `4 3 4 2 + 0 -1`,
+		expected: []float64{4, 3, 4, 2, 3, 2, 3, 1},
+	}.Test(t)
+}
+
 func TestTokenize(t *testing.T) {
 	eval.Tokenize(`1(2 3 %4)`)
 }
