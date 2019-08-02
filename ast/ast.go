@@ -669,10 +669,7 @@ func (p *Parser) parseUnknown() (n *Unknown, err error) {
 func get(x interface{}, field string) (interface{}, error) {
 	t := reflect.ValueOf(x)
 	m := t.MethodByName(field)
-	if !m.IsValid() {
-		return nil, fmt.Errorf("Unable to find method '%v' on type '%T'", field, x)
-	}
-	if !m.IsNil() {
+	if m.IsValid() && !m.IsNil() {
 		out := m.Call(nil)
 		return out[0].Interface(), nil
 	}
